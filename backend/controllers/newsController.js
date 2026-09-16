@@ -2,10 +2,10 @@ const getNews = async (req, res) => {
   try {
     const {
       category = "top",
-      country = "in",
+      country = "",
       language = "en",
       q = "",
-      breaking = "false",
+      timeframe = "",
     } = req.query;
 
     if (!process.env.NEWSDATA_API_KEY) {
@@ -17,17 +17,19 @@ const getNews = async (req, res) => {
     const params = new URLSearchParams();
 
     params.append("apikey", process.env.NEWSDATA_API_KEY);
-    params.append("country", country);
     params.append("language", language);
     params.append("category", category);
+
+    if (country) {
+      params.append("country", country);
+    }
 
     if (q.trim()) {
       params.append("q", q.trim());
     }
 
-    // Breaking news = very recent articles
-    if (breaking === "true") {
-      params.append("timeframe", "2");
+    if (timeframe) {
+      params.append("timeframe", timeframe);
     }
 
     const response = await fetch(
@@ -36,10 +38,10 @@ const getNews = async (req, res) => {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || data.status === "error") {
       console.error("NewsData API error:", data);
 
-      return res.status(response.status).json({
+      return res.status(response.status || 500).json({
         message: data?.message || "News API request failed",
       });
     }

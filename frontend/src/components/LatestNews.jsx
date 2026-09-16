@@ -18,7 +18,7 @@ const NEWS_TABS = [
     id: "world",
     label: "🌎 World",
     category: "world",
-    country: "in",
+    country: "",
   },
   {
     id: "business",
@@ -49,7 +49,7 @@ const NEWS_TABS = [
     label: "🔥 Breaking News",
     category: "top",
     country: "in",
-    breaking: true,
+    timeframe: "2",
   },
   {
     id: "latest",
@@ -61,16 +61,10 @@ const NEWS_TABS = [
 
 export default function LatestNews() {
   const [activeTab, setActiveTab] = useState("india");
-
   const [news, setNews] = useState([]);
-
   const [search, setSearch] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState("");
-
-  const [searched, setSearched] = useState(false);
 
   const loadNews = async (tabId = activeTab, searchText = "") => {
     try {
@@ -82,12 +76,15 @@ export default function LatestNews() {
 
       const params = {
         category: selectedTab.category,
-        country: selectedTab.country,
         language: "en",
       };
 
-      if (selectedTab.breaking) {
-        params.breaking = "true";
+      if (selectedTab.country) {
+        params.country = selectedTab.country;
+      }
+
+      if (selectedTab.timeframe) {
+        params.timeframe = selectedTab.timeframe;
       }
 
       if (searchText.trim()) {
@@ -119,9 +116,7 @@ export default function LatestNews() {
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
-    setSearched(false);
     setSearch("");
-
     loadNews(tabId);
   };
 
@@ -129,39 +124,29 @@ export default function LatestNews() {
     e.preventDefault();
 
     if (!search.trim()) {
-      setSearched(false);
       loadNews(activeTab);
       return;
     }
 
-    setSearched(true);
     loadNews(activeTab, search);
   };
 
   return (
     <section className="latest-news-section">
 
-      {/* Header */}
       <div className="latest-news-header">
-
         <div>
           <h2>Latest News</h2>
-
-          <p>
-            {searched
-              ? `Search results for "${search}"`
-              : "Latest news from around the world"}
-          </p>
+          <p>News from India and around the world</p>
         </div>
-
       </div>
 
-      {/* News Tabs */}
+      {/* NEWS CATEGORIES */}
       <div className="news-tabs">
-
         {NEWS_TABS.map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => handleTabChange(tab.id)}
             className={`news-tab ${
               activeTab === tab.id
@@ -172,19 +157,18 @@ export default function LatestNews() {
             {tab.label}
           </button>
         ))}
-
       </div>
 
-      {/* Search */}
+      {/* SEARCH */}
       <form
         onSubmit={handleSearch}
         className="news-search-form"
       >
         <input
           type="text"
+          placeholder="🔎 Search news..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔎 Search news..."
           className="news-search-input"
         />
 
@@ -196,38 +180,36 @@ export default function LatestNews() {
         </button>
       </form>
 
-      {/* Loading */}
+      {/* LOADING */}
       {loading && (
         <div className="news-status">
           Loading latest news...
         </div>
       )}
 
-      {/* Error */}
+      {/* ERROR */}
       {!loading && error && (
         <div className="news-error">
           {error}
         </div>
       )}
 
-      {/* No results */}
+      {/* EMPTY */}
       {!loading && !error && news.length === 0 && (
         <div className="news-status">
           No news found.
         </div>
       )}
 
-      {/* News Cards */}
+      {/* NEWS */}
       {!loading && !error && news.length > 0 && (
         <div className="news-grid">
-
           {news.map((item) => (
             <article
               className="news-card"
               key={item.id}
             >
 
-              {/* Image */}
               {item.image ? (
                 <img
                   src={item.image}
@@ -245,27 +227,23 @@ export default function LatestNews() {
 
               <div className="news-card-body">
 
-                {/* Source */}
                 <span className="news-source">
                   {item.source}
                 </span>
 
-                {/* Title */}
                 <h3>{item.title}</h3>
 
-                {/* Description */}
                 {item.description && (
                   <p>
-                    {item.description.length > 150
+                    {item.description.length > 160
                       ? `${item.description.substring(
                           0,
-                          150
+                          160
                         )}...`
                       : item.description}
                   </p>
                 )}
 
-                {/* Footer */}
                 <div className="news-card-footer">
 
                   <span>
@@ -287,14 +265,11 @@ export default function LatestNews() {
                   )}
 
                 </div>
-
               </div>
             </article>
           ))}
-
         </div>
       )}
-
     </section>
   );
 }
